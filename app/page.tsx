@@ -201,9 +201,10 @@ export default function WeddingInvitation() {
         const { data, error } = await supabase.from("rsvp_messages").insert({
           guest_name: guestNameToSave,
           message: formData.message,
-          attendance: formData.attendance === "hadir",
+          attendance: formData.attendance, // simpan string langsung
           guest_count: formData.attendance === "hadir" ? Number.parseInt(formData.guests) || 1 : 0,
         })
+        
 
         if (error) {
           console.error("Error saving message:", error)
@@ -708,16 +709,18 @@ export default function WeddingInvitation() {
                       Konfirmasi Kehadiran
                     </label>
                     <select
-                      name="attendance"
-                      value={formData.attendance}
-                      onChange={handleInputChange}
-                      required
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm sm:text-base"
-                    >
-                      <option value="">Pilih konfirmasi kehadiran</option>
-                      <option value="hadir">Hadir</option>
-                      <option value="tidak-hadir">Tidak Hadir</option>
-                    </select>
+  name="attendance"
+  value={formData.attendance}
+  onChange={handleInputChange}
+  required
+  className="w-full p-3 border border-gray-300 rounded-lg ..."
+>
+  <option value="">Pilih konfirmasi kehadiran</option>
+  <option value="hadir">Hadir</option>
+  <option value="tidak-hadir">Tidak Hadir</option>
+  <option value="ragu-ragu">Ragu-ragu</option>
+</select>
+
                   </div>
 
                   <div>
@@ -779,12 +782,21 @@ export default function WeddingInvitation() {
                               {msg.guest_name}
                             </h4>
                             <span
-                              className={`px-2 py-1 rounded-full text-xs font-medium self-start ${
-                                msg.attendance ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-                              }`}
-                            >
-                              {msg.attendance ? "✓ Hadir" : "✗ Tidak Hadir"}
-                            </span>
+  className={`px-2 py-1 rounded-full text-xs font-medium self-start ${
+    msg.attendance === "hadir"
+      ? "bg-green-100 text-green-700"
+      : msg.attendance === "tidak-hadir"
+      ? "bg-red-100 text-red-700"
+      : "bg-yellow-100 text-yellow-700"
+  }`}
+>
+  {msg.attendance === "hadir"
+    ? "✓ Hadir"
+    : msg.attendance === "tidak-hadir"
+    ? "✗ Tidak Hadir"
+    : "🤔 Ragu-ragu"}
+</span>
+
                           </div>
                           <span className="text-xs text-gray-500">
                             {new Date(msg.created_at).toLocaleTimeString("id-ID", {
@@ -819,18 +831,42 @@ export default function WeddingInvitation() {
                   <div className="mt-6 pt-4 border-t border-gray-200">
                     <div className="grid grid-cols-2 gap-4 text-center">
                       <div className="bg-green-50 p-3 rounded-lg">
-                        <div className="text-base sm:text-lg font-bold text-green-600">
-                          {messages.filter((msg) => msg.attendance).length}
-                        </div>
-                        <div className="text-xs text-green-700">Akan Hadir</div>
-                      </div>
-                      <div className="bg-blue-50 p-3 rounded-lg">
-                        <div className="text-base sm:text-lg font-bold text-blue-600">
-                          {messages
-                            .filter((msg) => msg.attendance && msg.guest_count > 0)
-                            .reduce((total, msg) => total + msg.guest_count, 0)}
-                        </div>
-                        <div className="text-xs text-blue-700">Total Tamu</div>
+                      <div className="grid grid-cols-4 gap-4 text-center">
+  {/* Akan Hadir */}
+  <div className="bg-green-50 p-3 rounded-lg">
+    <div className="text-base sm:text-lg font-bold text-green-600">
+      {messages.filter((msg) => msg.attendance === "hadir").length}
+    </div>
+    <div className="text-xs text-green-700">Akan Hadir</div>
+  </div>
+
+  {/* Tidak Hadir */}
+  <div className="bg-red-50 p-3 rounded-lg">
+    <div className="text-base sm:text-lg font-bold text-red-600">
+      {messages.filter((msg) => msg.attendance === "tidak-hadir").length}
+    </div>
+    <div className="text-xs text-red-700">Tidak Hadir</div>
+  </div>
+
+  {/* Ragu-ragu */}
+  <div className="bg-yellow-50 p-3 rounded-lg">
+    <div className="text-base sm:text-lg font-bold text-yellow-600">
+      {messages.filter((msg) => msg.attendance === "ragu-ragu").length}
+    </div>
+    <div className="text-xs text-yellow-700">Ragu-ragu</div>
+  </div>
+
+  {/* Total Tamu */}
+  <div className="bg-blue-50 p-3 rounded-lg">
+    <div className="text-base sm:text-lg font-bold text-blue-600">
+      {messages
+        .filter((msg) => msg.attendance === "hadir" && msg.guest_count > 0)
+        .reduce((total, msg) => total + msg.guest_count, 0)}
+    </div>
+    <div className="text-xs text-blue-700">Total Tamu</div>
+  </div>
+</div>
+
                       </div>
                     </div>
                   </div>
